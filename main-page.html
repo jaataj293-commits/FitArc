@@ -6,6 +6,24 @@
   <title>Main Page</title>
 </head>
 <body>
-  <h1>You are logged in</h1>
+  <h1>Welcome to Main Page</h1>
+  <p>You are successfully logged in.</p>
+  <button id="logout-btn">Logout</button>
+
+  <script type="module">
+    import { auth } from "./firebase.js";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      }
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "index.html";
+    });
+  </script>
 </body>
 </html>
