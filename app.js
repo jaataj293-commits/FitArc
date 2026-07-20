@@ -1,11 +1,29 @@
 import { auth } from "./firebase.js";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  onAuthStateChanged
+} from "firebase/auth";
 
-window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-  size: "normal"
+const phoneScreen = document.getElementById("phone-screen");
+const otpScreen = document.getElementById("otp-screen");
+const sendCodeBtn = document.getElementById("send-code-btn");
+const verifyCodeBtn = document.getElementById("verify-code-btn");
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.href = "main-page.html";
+  }
 });
 
-document.getElementById("send-code-btn").addEventListener("click", async () => {
+window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+  size: "normal",
+  callback: () => {
+    console.log("reCAPTCHA solved");
+  }
+});
+
+sendCodeBtn.addEventListener("click", async () => {
   const phoneNumber = document.getElementById("phone").value;
   const appVerifier = window.recaptchaVerifier;
 
@@ -13,20 +31,23 @@ document.getElementById("send-code-btn").addEventListener("click", async () => {
     const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
     window.confirmationResult = confirmationResult;
 
-    document.getElementById("phone-screen").style.display = "none";
-    document.getElementById("otp-screen").style.display = "block";
+    phoneScreen.classList.add("hidden");
+    otpScreen.classList.remove("hidden");
   } catch (error) {
-    alert("Failed to send code");
+    console.error("Error sending OTP:", error);
+    alert("Could not send OTP. Check number and try again.");
   }
 });
 
-document.getElementById("verify-code-btn").addEventListener("click", async () => {
+verifyCodeBtn.addEventListener("click", async () => {
   const code = document.getElementById("otp").value;
 
   try {
-    await window.confirmationResult.confirm(code);
+    const result = await window.confirmationResult.confirm(code);
+    console.log("User logged in:", result.user);
     window.location.href = "main-page.html";
   } catch (error) {
-    alert("Invalid code");
+    console.error("Invalid OTP:", error);
+    alert("Wrong OTP. Please try again.");
   }
 });
