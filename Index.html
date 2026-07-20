@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phone Login App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="phone-screen">
+    <h1>Welcome</h1>
+    <p>Enter your phone number</p>
+    <input id="phone" type="tel" placeholder="+91 9876543210" />
+    <button id="send-code-btn">Send Code</button>
+    <div id="recaptcha-container"></div>
+  </div>
+
+  <div id="otp-screen" style="display:none;">
+    <h2>Enter 6-digit code</h2>
+    <input id="otp" type="text" maxlength="6" placeholder="123456" />
+    <button id="verify-code-btn">Verify Code</button>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
