@@ -3,12 +3,14 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   onAuthStateChanged
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const phoneScreen = document.getElementById("phone-screen");
-const otpScreen = document.getElementById("otp-screen");
-const sendCodeBtn = document.getElementById("send-code-btn");
-const verifyCodeBtn = document.getElementById("verify-code-btn");
+const phoneSection = document.getElementById("phone-section");
+const otpSection = document.getElementById("otp-section");
+const sendOtpBtn = document.getElementById("send-otp-btn");
+const verifyOtpBtn = document.getElementById("verify-otp-btn");
+const backBtn = document.getElementById("back-btn");
+const message = document.getElementById("message");
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
@@ -23,31 +25,50 @@ window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
   }
 });
 
-sendCodeBtn.addEventListener("click", async () => {
-  const phoneNumber = document.getElementById("phone").value;
+sendOtpBtn.addEventListener("click", async () => {
+  const phoneNumber = document.getElementById("phone-number").value.trim();
   const appVerifier = window.recaptchaVerifier;
 
+  if (!phoneNumber.startsWith("+")) {
+    message.textContent = "Enter phone number with country code, for example +919660040966";
+    return;
+  }
+
   try {
+    message.textContent = "Sending OTP...";
     const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
     window.confirmationResult = confirmationResult;
 
-    phoneScreen.classList.add("hidden");
-    otpScreen.classList.remove("hidden");
+    phoneSection.style.display = "none";
+    otpSection.style.display = "block";
+    message.textContent = "OTP sent successfully";
   } catch (error) {
     console.error("Error sending OTP:", error);
-    alert("Could not send OTP. Check number and try again.");
+    message.textContent = "Could not send OTP. Check number, reCAPTCHA, and Firebase settings.";
   }
 });
 
-verifyCodeBtn.addEventListener("click", async () => {
-  const code = document.getElementById("otp").value;
+verifyOtpBtn.addEventListener("click", async () => {
+  const code = document.getElementById("otp-code").value.trim();
+
+  if (!code) {
+    message.textContent = "Please enter OTP";
+    return;
+  }
 
   try {
-    const result = await window.confirmationResult.confirm(code);
-    console.log("User logged in:", result.user);
+    message.textContent = "Verifying OTP...";
+    await window.confirmationResult.confirm(code);
+    message.textContent = "Login successful";
     window.location.href = "main-page.html";
   } catch (error) {
-    console.error("Invalid OTP:", error);
-    alert("Wrong OTP. Please try again.");
+    console.error("Error verifying OTP:", error);
+    message.textContent = "Invalid OTP. Try again.";
   }
+});
+
+backBtn.addEventListener("click", () => {
+  otpSection.style.display = "none";
+  phoneSection.style.display = "block";
+  message.textContent = "";
 });
